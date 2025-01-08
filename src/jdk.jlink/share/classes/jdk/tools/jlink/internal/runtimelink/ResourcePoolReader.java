@@ -23,6 +23,7 @@
 
 package jdk.tools.jlink.internal.runtimelink;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
@@ -52,6 +53,11 @@ public class ResourcePoolReader implements ImageResource {
     @Override
     public byte[] getResourceBytes(String name) {
         return pool.findEntry(name).orElseThrow().contentBytes();
+    }
+
+    @Override
+    public InputStream getResource(String name) {
+        return pool.findEntry(name).orElseThrow().content();
     }
 
 }
