@@ -538,7 +538,6 @@ ShenandoahHeap::ShenandoahHeap(ShenandoahCollectorPolicy* policy) :
   _pacer(nullptr),
   _verifier(nullptr),
   _phase_timings(nullptr),
-  _mmu_tracker(),
   _monitoring_support(nullptr),
   _memory_pool(nullptr),
   _stw_memory_manager("Shenandoah Pauses"),
@@ -632,6 +631,8 @@ public:
 
 void ShenandoahHeap::post_initialize() {
   CollectedHeap::post_initialize();
+
+  // Schedule periodic task to report on gc thread CPU utilization
   _mmu_tracker.initialize();
 
   MutexLocker ml(Threads_lock);
@@ -1467,6 +1468,18 @@ size_t ShenandoahHeap::max_tlab_size() const {
   return ShenandoahHeapRegion::max_tlab_size_words();
 }
 
+void ShenandoahHeap::collect_as_vm_thread(GCCause::Cause cause) {
+  // These requests are ignored because we can't easily have Shenandoah jump into
+  // a synchronous (degenerated or full) cycle while it is in the middle of a concurrent
+  // cycle. We _could_ cancel the concurrent cycle and then try to run a cycle directly
+  // on the VM thread, but this would confuse the control thread mightily and doesn't
+  // seem worth the trouble. Instead, we will have the caller thread run (and wait for) a
+  // concurrent cycle in the prologue of the heap inspect/dump operation. This is how
+  // other concurrent collectors in the JVM handle this scenario as well.
+  assert(Thread::current()->is_VM_thread(), "Should be the VM thread");
+  guarantee(cause == GCCause::_heap_dump || cause == GCCause::_heap_inspection, "Invalid cause");
+}
+
 void ShenandoahHeap::collect(GCCause::Cause cause) {
   control_thread()->request_gc(cause);
 }
@@ -1547,7 +1560,9 @@ void ShenandoahHeap::set_active_generation() {
 void ShenandoahHeap::on_cycle_start(GCCause::Cause cause, ShenandoahGeneration* generation) {
   shenandoah_policy()->record_collection_cause(cause);
 
-  assert(gc_cause()  == GCCause::_no_gc, "Over-writing cause");
+  const GCCause::Cause current = gc_cause();
+  assert(current == GCCause::_no_gc, "Over-writing cause: %s, with: %s",
+         GCCause::to_string(current), GCCause::to_string(cause));
   assert(_gc_generation == nullptr, "Over-writing _gc_generation");
 
   set_gc_cause(cause);
@@ -2083,6 +2098,9 @@ void ShenandoahHeap::stop() {
 
   // Step 0. Notify policy to disable event recording and prevent visiting gc threads during shutdown
   _shenandoah_policy->record_shutdown();
+
+  // Step 0a. Stop reporting on gc thread cpu utilization
+  mmu_tracker()->stop();
 
   // Step 1. Notify control thread that we are in shutdown.
   // Note that we cannot do that with stop(), because stop() is blocking and waits for the actual shutdown.
