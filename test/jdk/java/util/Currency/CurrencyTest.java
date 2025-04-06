@@ -84,8 +84,8 @@ public class CurrencyTest {
         public void invalidCurrencyTest(String currencyCode) {
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                     Currency.getInstance(currencyCode), "getInstance() did not throw IAE");
-            assertEquals("The input currency code is not a" +
-                    " valid ISO 4217 code", ex.getMessage());
+            assertEquals("The input currency code'" + currencyCode +
+                    "' is not a valid ISO 4217 code", ex.getMessage());
         }
 
         private static Stream<String> non4217Currencies() {
@@ -99,8 +99,8 @@ public class CurrencyTest {
         public void invalidCurrencyLengthTest(String currencyCode) {
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
                     Currency.getInstance(currencyCode), "getInstance() did not throw IAE");
-            assertEquals("The input currency code must have a length of 3" +
-                    " characters", ex.getMessage());
+            assertEquals("The input currency code '" + currencyCode  +
+                    "' must have a length of 3 characters", ex.getMessage());
         }
 
         private static Stream<String> invalidLengthCurrencies() {
@@ -163,8 +163,8 @@ public class CurrencyTest {
                                 "AC|CP|DG|EA|EU|FX|IC|SU|TA|UK")) { // exceptional reservation codes
                     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                             () -> Currency.getInstance(locale), "Did not throw IAE");
-                    assertEquals("The country of the input locale is not a" +
-                            " valid ISO 3166 country code", ex.getMessage());
+                    assertEquals("The country of the input locale '" + locale + "' is not a " +
+                            "valid ISO 3166 country code", ex.getMessage());
                 } else {
                     goodCountries++;
                     Currency currency = Currency.getInstance(locale);
@@ -183,10 +183,11 @@ public class CurrencyTest {
         // Check an invalid country code
         @Test
         public void invalidCountryTest() {
+            Locale locale = Locale.of("", "EU");
             IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                     ()-> Currency.getInstance(Locale.of("", "EU")), "Did not throw IAE");
-            assertEquals("The country of the input locale is not a valid" +
-                    " ISO 3166 country code", ex.getMessage());
+            assertEquals("The country of the input locale '" + locale +
+                    "' is not a valid ISO 3166 country code", ex.getMessage());
         }
 
         // Ensure a selection of countries have the expected currency
