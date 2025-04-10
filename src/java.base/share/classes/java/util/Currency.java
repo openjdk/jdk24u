@@ -311,8 +311,8 @@ public final class Currency implements Serializable {
             // or in the list of other currencies.
             boolean found = false;
             if (currencyCode.length() != 3) {
-                throw new IllegalArgumentException("The input currency code must " +
-                        "have a length of 3 characters");
+                throw new IllegalArgumentException("The input currency code '" + currencyCode  +
+                        "' must have a length of 3 characters");
             }
             char char1 = currencyCode.charAt(0);
             char char2 = currencyCode.charAt(1);
@@ -335,8 +335,8 @@ public final class Currency implements Serializable {
             if (!found) {
                 OtherCurrencyEntry ocEntry = OtherCurrencyEntry.findEntry(currencyCode);
                 if (ocEntry == null) {
-                    throw new IllegalArgumentException("The input currency code" +
-                            " is not a valid ISO 4217 code");
+                    throw new IllegalArgumentException("The input currency code'" + currencyCode   +
+                            "' is not a valid ISO 4217 code");
                 }
                 defaultFractionDigits = ocEntry.fraction;
                 numericCode = ocEntry.numericCode;
@@ -391,8 +391,8 @@ public final class Currency implements Serializable {
         String country = CalendarDataUtility.findRegionOverride(locale).getCountry();
 
         if (country == null || !country.matches("^[a-zA-Z]{2}$")) {
-            throw new IllegalArgumentException("The country of the input locale" +
-                    " is not a valid ISO 3166 country code");
+            throw new IllegalArgumentException("The country of the input locale '" + locale +
+                    "' is not a valid ISO 3166 country code");
         }
 
         char char1 = country.charAt(0);
@@ -409,8 +409,8 @@ public final class Currency implements Serializable {
         } else {
             // special cases
             if (tableEntry == INVALID_COUNTRY_ENTRY) {
-                throw new IllegalArgumentException("The country of the input locale" +
-                        " is not a valid ISO 3166 country code");
+                throw new IllegalArgumentException("The country of the input locale '" + locale +
+                        "' is not a valid ISO 3166 country code");
             }
             if (tableEntry == COUNTRY_WITHOUT_CURRENCY_ENTRY) {
                 return null;
