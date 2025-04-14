@@ -108,17 +108,12 @@ public class Compiler {
 
     private static void preloadClasses(String className, long id,
             ConstantPool constantPool) {
-        try {
-            for (int i = 0, n = constantPool.getSize(); i < n; ++i) {
-                try {
+        for (int i = 0, n = constantPool.getSize(); i < n; ++i) {
+            try {
+                if (constantPool.getTagAt(i) == ConstantPool.Tag.CLASS) {
                     constantPool.getClassAt(i);
-                } catch (IllegalArgumentException ignore) {
                 }
             }
-        } catch (Throwable t) {
-            CompileTheWorld.OUT.println(String.format("[%d]\t%s\tWARNING preloading failed : %s",
-                    id, className, t));
-            t.printStackTrace(CompileTheWorld.ERR);
         }
     }
 
@@ -186,6 +181,10 @@ public class Compiler {
                         Thread.currentThread().interrupt();
                     }
                 }
+            } catch (Throwable t) {
+                CompileTheWorld.OUT.println(String.format("[%d]\t%s\tWARNING preloading failed : %s",
+                         id, className, t));
+                t.printStackTrace(CompileTheWorld.ERR);
             }
         }
 
