@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -50,7 +50,6 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 
 import sun.awt.X11.XBaseWindow;
@@ -255,14 +254,12 @@ public abstract class UNIXToolkit extends SunToolkit
         return result;
     }
 
-    private Integer getGnomeShellMajorVersion() {
+    public Integer getGnomeShellMajorVersion() {
         try {
             Process process =
                 new ProcessBuilder("/usr/bin/gnome-shell", "--version")
                         .start();
-            try (InputStreamReader isr = new InputStreamReader(process.getInputStream());
-                 BufferedReader reader = new BufferedReader(isr)) {
-
+            try (BufferedReader reader = process.inputReader()) {
                 if (process.waitFor(2, SECONDS) &&  process.exitValue() == 0) {
                     String line = reader.readLine();
                     if (line != null) {
